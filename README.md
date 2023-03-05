@@ -1,25 +1,31 @@
-<!-- markdownlint-disable MD033 -->
-<!-- cSpell:words headered headerless HJSON ryuuganime mediahistory savefile Anony substat substatus kitsu -->
+<!-- markdownlint-disable MD033 MD013 MD028 -->
+<!-- cSpell:words headered headerless HJSON ryuuganime mediahistory savefileAnony substat substatus kitsu savefile anony datas imdb tmdb -->
+<!-- markdownlint-enable MD013 -->
 <!-- omit in toc -->
 # Ryuuganime Media SaveFile Format
 
-Standardization attempt and Proof of Concept of cross tracking site services save file/exported list for media entries library in JSON, YAML, HJSON, PowerShell `psd1`, and CSON format.
+Standardization attempt and Proof of Concept of cross tracking site services
+save file/exported list for media entries library in JSON, YAML, HJSON,
+PowerShell `psd1`, and CSON format.
 
-> **WARNING**
+> **Warning**
 >
-> This documentation is still in beta. The schema and the format may change in the future.
+> This documentation is still in beta. The schema and the format may change in
+> the future.
 
 <!-- omit in toc -->
-## Table of Contents
+# Table of Contents
 
 * [What is this?](#what-is-this)
 * [Why do we need this?](#why-do-we-need-this)
 * [How does it work?](#how-does-it-work)
 * [Which media type is supported?](#which-media-type-is-supported)
   * [Why is the schema not optimized for other media types?](#why-is-the-schema-not-optimized-for-other-media-types)
-* [How do I use it?](#how-do-i-use-it)
-* [Is there a way to store progress history for each record?](#is-there-a-way-to-store-progress-history-for-each-record)
+  * [How do I use it?](#how-do-i-use-it)
+  * [Is there a way to store progress history for each record?](#is-there-a-way-to-store-progress-history-for-each-record)
 * [Ryuuganime Media SaveFile Format Documentation](#ryuuganime-media-savefile-format-documentation)
+  * [Abstract](#abstract)
+  * [Introduction](#introduction)
   * [Code formatting, styling, and file name](#code-formatting-styling-and-file-name)
   * [SaveFile Format](#savefile-format)
     * [Headered](#headered)
@@ -46,36 +52,60 @@ Standardization attempt and Proof of Concept of cross tracking site services sav
   * [Definitions](#definitions)
     * [Enum: MediaType](#enum-mediatype)
     * [Int: Progress](#int-progress)
-* [Usage Example](#usage-example)
+    * [Object: Dates](#object-dates)
+      * [`dates/start`](#datesstart)
+      * [`dates/finish`](#datesfinish)
+      * [`dates/season`](#datesseason)
+      * [`dates/time`](#datestime)
+    * [Object: DatesChild](#object-dateschild)
+      * [`datesChild/date`](#dateschilddate)
+      * [`datesChild/month`](#dateschildmonth)
+      * [`datesChild/year`](#dateschildyear)
+* [Examples](#examples)
   * [JSON Headerless](#json-headerless)
+  * [HJSON Headerless](#hjson-headerless)
   * [PSD1 Headered](#psd1-headered)
   * [YAML Headered](#yaml-headered)
 
-## What is this?
+# What is this?
 
-This is an attempt to standardize the save file format for media entries in JSON and YAML. This is a proof of concept and is not yet finalized. This is also not a standardization of the API, but rather the save file format.
+This is an attempt to standardize the save file format for media entries in JSON
+and YAML. This is a proof of concept and is not yet finalized. This is also not
+a standardization of the API, but rather the save file format.
 
 The repo also acts as a schema holder for the SaveFile format.
 
-## Why do we need this?
+# Why do we need this?
 
-There are many sites that offer a way to track media entries. However, there are no standardized save file formats for these entries. This makes it difficult to transfer your list from one site to another.
+There are many sites that offer a way to track media entries. However, there are
+no standardized save file formats for these entries. This makes it difficult to
+transfer your list from one site to another.
 
-We also believe that user data must be readable and editable by the user, and not being locked by undocumented properties and formats.
+We also believe that user data must be readable and editable by the user, and
+not being locked by undocumented properties and formats.
 
-## How does it work?
+# How does it work?
 
-Media entries are saved either in JSON/C, YAML, [HJSON](https://hjson.github.io/), PowerShell `psd1`, and/or CSON format. Usage of these formats are not mutually exclusive, and the user can choose which format to use, but we recommend using YAML for readability.
+Media entries are saved either in JSON(C), YAML, PowerShell `psd1`, CSON, and/or
+[HJSON](https://hjson.github.io/). Usage of these formats are not mutually
+exclusive, and the user can choose which format to use. However, we recommend
+developers to use YAML as default format for readability.
 
-However, the usage of XML is not recommended, as it is not human-readable, and is not supported by the schema by default.
+However, the usage of XML is not recommended, as it is not human-readable,
+and is not supported by the schema by default, we only offers a schema for
+JSON and YAML.
 
-The file itself can be saved as an object ([`headered`](#headered)) or as an array ([`headerless`](#headerless)).
+The file itself can be saved as an object ([`headered`](#headered)) or
+as an array ([`headerless`](#headerless)).
 
-## Which media type is supported?
+# Which media type is supported?
 
 SaveFile format is virtually media type agnostic/independent.
 
-However, the schema is mostly optimized for anime and manga progress system, where the media entry is divided into episodes/chapters and volumes, and progress is tracked by the number of episodes/chapters and volumes consumed, not by which episode/chapter and volume watched/read.
+However, the schema is mostly optimized for anime and manga progress system,
+where the media entry is divided into episodes/chapters and volumes,
+and progress is tracked by the number of episodes/chapters and volumes
+consumed, not by which episode/chapter and volume watched/read.
 
 For example:
 
@@ -88,41 +118,52 @@ For example:
     chapter: 12
 ```
 
-In this example, the user is already watching the 4th episode of the anime with ID `123456`, and the upstream service has 12 episodes.
+In this example, the user is already watching the 4th episode of the anime
+with ID `123456`, and the upstream service has 12 episodes.
 
 For other media types, the schema can be modified to fit the media type.
 
-### Why is the schema not optimized for other media types?
+## Why is the schema not optimized for other media types?
 
-Each media type has its own progress system, and it is not possible to create a schema that can fit all media types, as seen in the example above.
+Each media type has its own progress system, and it is not possible to create
+a schema that can fit all media types, as seen in the example above.
 
-However, the schema allows for additional allowed properties, so it is possible to add properties that are specific to the media type.
+However, the schema allows for additional allowed properties, so it is possible
+to add properties that are specific to the media type.
 
-For example, TV and animation media type can use `//chapter` as episodes marker and `//volume` as seasons marker, while other media that can not determined by episodes and seasons (such `game`) can use `//progress` as percentile marker.
+For example, TV and animation media type can use `//chapter` as episodes marker
+and `//volume` as seasons marker, while other media that can not determined by
+episodes and seasons (such `game`) can use `//progress` as percentile marker.
 
 ## How do I use it?
 
-SaveFile format must follow the schema defined in the `schema` folder, and the documentation of usage will be explained in this README.
+SaveFile format must follow the schema defined in the `schema` folder, and the
+documentation of usage will be explained in this README.
 
 ## Is there a way to store progress history for each record?
 
-No, SaveFile format is not designed to store progress history. However, it is possible to store progress history in a separate file as `<service>.mediahistory.log` and readable as a TSV file with `\t` as delimiter.
+No, SaveFile format is not designed to store progress history. However, it is
+possible to store progress history in a separate file
+as `<service>.mediahistory.log` and readable as a TSV file with `\t` as
+delimiter.
 
 Below is a format example of the history log:
 
-<!-- markdownlint-disable MD010 -->
+<!-- markdownlint-disable MD010 MD013 -->
 <!-- cSpell:disable -->
 ```log
 # DATE FORMAT				STATUS	KIND		ID		TITLE	EVENTTYPE	SUBSTAT	AFTER MSG	BEFORE		MESSAGE
 [2022-12-20T17:50:00+07:00]	EVENT	ANIMATION	123456	"HELLO"	PROGEPISODE	CURRENT	CH:2 VL:8	CH:1 VL:8	null
 ```
 <!-- cSpell:enable -->
-<!-- markdownlint-enable MD010 -->
+<!-- markdownlint-enable MD010 MD013 -->
 
 <!-- omit in toc -->
 ### Date format
 
-The date format is based on [RFC 3339](https://tools.ietf.org/html/rfc3339) and [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) with the following format in Unix:
+The date format is based on [RFC 3339](https://tools.ietf.org/html/rfc3339) and
+[ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) with the following format in
+Unix:
 
 ```txt
 %Y-%M-%DT%h:%m:%s%Z:%z
@@ -136,12 +177,15 @@ The status of the event. Can be either `EVENT`, `INFO`, `ERROR`, or `WARN`.
 <!-- omit in toc -->
 ### Kind
 
-The kind of the logged information. Can be either `USER`, `SERVICE`, `MEDIA`, `ANIMATION`, `COMIC`, `GAME`, `BOOK`, `TV`, `MOVIE`, `PODCAST`, `MUSIC`, `OTHER`, or `MESSAGE`.
+The kind of the logged information. Can be either `USER`, `SERVICE`, `MEDIA`,
+`ANIMATION`, `COMIC`, `GAME`, `BOOK`, `TV`, `MOVIE`, `PODCAST`, `MUSIC`,
+`OTHER`, or `MESSAGE`.
 
 <!-- omit in toc -->
 ### ID
 
-The ID of the entry. Can be either `0` or `null` if the entry is not yet registered.
+The ID of the entry. Can be either `0` or `null` if the entry is not yet
+registered.
 
 <!-- omit in toc -->
 ### Title
@@ -177,17 +221,20 @@ Denoting what event has happened. Can be either:
 <!-- omit in toc -->
 ### Substat
 
-The substatus of the event. Can be either `CURRENT`, `PLANNED`, `PAUSED`, `STOPPED`, `COMPLETED`, or `null`
+The substatus of the event. Can be either `CURRENT`, `PLANNED`, `PAUSED`,
+`STOPPED`, `COMPLETED`, `PROHIBITED` or `null`
 
 <!-- omit in toc -->
 ### After
 
-Details of the event after the event has happened. Can be either `null` or a string.
+Details of the event after the event has happened. Can be either `null` or a
+string.
 
 <!-- omit in toc -->
 ### Before
 
-Details of the event before the event has happened. Can be either `null` or a string.
+Details of the event before the event has happened. Can be either `null` or a
+string.
 
 <!-- omit in toc -->
 ### Message
@@ -196,57 +243,111 @@ The message of the event. Can be either `null` or a string.
 
 <hr>
 
-## Ryuuganime Media SaveFile Format Documentation
+# Ryuuganime Media SaveFile Format Documentation
 
-> **NOTE**
+> **Note**
 >
-> JSON Path/Pointer in this documentation is based on [JSON Pointer](https://tools.ietf.org/html/rfc6901), for example. `/` is the root of JSON object (`$json`), and `/metadata` is the `$json.metadata` object.
+> JSON Path/Pointer in this documentation is based on
+> [JSON Pointer](https://tools.ietf.org/html/rfc6901), for example. `/` is
+> the root of JSON object (`$json`), and `/metadata` is the `$json.metadata`
+> object.
 
-### Code formatting, styling, and file name
+> **Note**
+>
+> This is not an official RFC documents or similar of it, but rather a technical
+> proposal for a standardized save file format for media entries of usage for
+> Ryuuganime projects and 3rd party can use such standardized format for another
+> related project. It is not a finalized standard and is subject to change.
+> The proposed format is intended for technical discussion and feedback, and
+> the authors do not assume any liability for its usage. This document is
+> provided as-is and is intended solely for informational purposes.
 
-Properties must follow `camelCase` format. Code indentation preferably 2 spaces.
+## Abstract
 
-File encoding must be UTF-8, and line ending must be LF (`\n`).
+Ryuuganime Media SaveFile Format proposes a standardized save file format for
+media tracking entries in JSON, YAML, HJSON, PowerShell psd1, and CSON formats.
+The format is designed to ease user in modifying information and enable the
+transfer of media tracking information between different tracking sites and
+supports any type of media. While optimized for tracking anime and manga
+progress, the format is media type agnostic and allows for human-readable and
+editable user data. This document serves as a proof of concept for a
+cross-tracking site services save file/exported list for media entries library.
 
-However, UTF-8 with BOM is also allowed.
+## Introduction
 
-Generally, the file name should append `.savefile` or `.sf` in the end of the file name, before the file extension.
+Media tracking sites offer a convenient way to keep track of progress and
+maintain a library of consumed[^1] entries. However, users often face the
+challenge of transferring their library between different tracking sites.
+This is because there is no standardized save file format for media entries,
+which makes it difficult to move data from one site to another.
+Ryuuganime Media SaveFile Format aims to address this issue by proposing a
+standardization for a cross-tracking site services save file/exported list for
+media entries library.
 
-For example:
+[^1]: Read: Watched/Read/Listened/Played
 
-```text
-ryuuganime_anime.savefile.json
-```
+This document presents a proof of concept for a standardized save file format
+for media entries in JSON, YAML, HJSON, PowerShell psd1, and CSON formats.
+The proposed format is optimized for tracking anime and manga progress, but it
+is media type agnostic and supports any type of media. The format allows for
+human-readable and editable user data, and can be saved as an object or an
+array. This document aims to provide a starting point for the standardization
+of media entry save file formats, and while it is not yet finalized, it
+demonstrates the potential benefits of a standardized format for cross-site
+media tracking.
 
-If the file is a headerless format, the file name should append `.headerless` or `.hl` in the end of the file name, before the file extension.
+## Code formatting, styling, and file name
 
-For example:
+1. Properties must follow `camelCase` format. Code indentation preferably 2
+   spaces.
+2. File encoding must be UTF-8, and line ending must be LF (`\n`). However,
+   UTF-8 with BOM is also allowed.
+3. Generally, the file name should append `.savefile` or `.sf` in the end of
+   the file name, before the file extension.
 
-```text
-ryuuganime_anime.hl.savefile.json
-```
+   For example:
 
-### SaveFile Format
+   ```text
+   ryuuganime_anime.savefile.json
+   ```
 
-SaveFile format is a JSON, YAML, HJSON, PSD1, or CSON file that contains media entries. The file itself can be saved as an object ([`headered`](#headered)) or as an array ([`headerless`](#headerless)).
+   If the file is a headerless format, the file name should append `.headerless`
+   or `.hl` in the end of the file name, before the file extension.
 
-#### Headered
+   For example:
 
-A headered format is an object-format file that contains an information header (`/metadata`) object and an array of media entries (`/entries`).
+   ```text
+   ryuuganime_anime.hl.savefile.json
+   ```
 
-Optionally, the headered format can also contains `$schema` property, which is a pointer to the schema file, by default it is `https://ryuuganime.github.io/mediaSaveFile/schema/savefile_v1.0.0.schema.json`.
+## SaveFile Format
 
-#### Headerless
+SaveFile format is a JSON, YAML, HJSON, PSD1, or CSON file that contains media
+entries. The file itself can be saved as an object ([`headered`](#headered))
+or as an array ([`headerless`](#headerless)).
+
+### Headered
+
+A headered format is an object-format file that contains an
+information header (`/metadata`) object and an array of media entries (`/entries`).
+
+Optionally, the headered format can also contains `$schema` property, which is
+a pointer to the schema file, by default it is
+`https://ryuuganime.github.io/mediaSaveFile/schema/savefile_v1.0.0.schema.json`.
+
+### Headerless
 
 A headerless format only contains [an array of media entries](#entries-entries).
 
-### Headered Metadata (`/metadata`)
+## Headered Metadata (`/metadata`)
 
 * Type: Object
 * Is Required: Yes
 * Additional Properties: No
 
-The headered metadata object contains information about the SaveFile format, such as the version of the format, the name of the SaveFile, and the description of the SaveFile.
+The headered metadata object contains information about the SaveFile format,
+such as the version of the format, the name of the SaveFile, and the description
+of the SaveFile.
 
 The metadata also may contains information regarding:
 
@@ -275,9 +376,11 @@ metadata:
     uri: https://myservice.com/users/123456
 ```
 
-To add more properties outside of the schema, you can add them to `/metadata/service`, `/metadata/user`, `/metadata/exported`, or `/metadata/other`.
+To add more properties outside of the schema, you can add them to
+`/metadata/service`, `/metadata/user`, `/metadata/exported`, or
+`/metadata/other`.
 
-#### `version`
+### `version`
 
 * Type: String
 * Is Required: Yes
@@ -285,14 +388,14 @@ To add more properties outside of the schema, you can add them to `/metadata/ser
 
 The version of the SaveFile format.
 
-#### `name`
+### `name`
 
 * Type: String
 * Is Required: No
 
 The name of the SaveFile.
 
-#### `mediaType`
+### `mediaType`
 
 * Type: String
 * Is Required: Yes
@@ -300,14 +403,14 @@ The name of the SaveFile.
 
 The media type of the SaveFile.
 
-#### `description`
+### `description`
 
 * Type: String
 * Is Required: No
 
 Description of the SaveFile.
 
-#### `service`
+### `service`
 
 * Type: Object
 * Is Required: No
@@ -315,14 +418,14 @@ Description of the SaveFile.
 
 Information regarding the service that exported the SaveFile.
 
-##### `service/name`
+#### `service/name`
 
 * Type: String
 * Is Required: Yes
 
 The name of the service that exported the SaveFile.
 
-##### `service/uri`
+#### `service/uri`
 
 * Type: String
 * Is Required: Yes
@@ -330,21 +433,21 @@ The name of the service that exported the SaveFile.
 
 The URI of the service that exported the SaveFile.
 
-##### `service/version`
+#### `service/version`
 
 * Type: String
 * Is Required: No
 
 The version of the service that exported the SaveFile.
 
-##### `service/*`
+#### `service/*`
 
 * Type: Any
 * Is Required: No
 
 Additional properties that are specific to the service.
 
-#### `exported`
+### `exported`
 
 * Type: Object
 * Is Required: Yes
@@ -352,22 +455,22 @@ Additional properties that are specific to the service.
 
 Information regarding export.
 
-##### `exported/date`
+#### `exported/date`
 
 * Type: String
 * Is Required: Yes
-* Format: [RFC 3339 § 5.6: `Full-Date`](https://tools.ietf.org/html/rfc3339#section-5.6)
+* Format: [RFC 3339 § 5.6: `Date-Time`](https://tools.ietf.org/html/rfc3339#section-5.6)
 
 The date of export.
 
-##### `exported/*`
+#### `exported/*`
 
 * Type: Any
 * Is Required: No
 
 Additional properties that are specific to the export.
 
-#### `user`
+### `user`
 
 * Type: Object
 * Is Required: No
@@ -375,7 +478,7 @@ Additional properties that are specific to the export.
 
 Information regarding the user.
 
-##### `user/id`
+#### `user/id`
 
 * Type: String | Integer
 * Is Required: Yes
@@ -383,14 +486,14 @@ Information regarding the user.
 
 The ID of the user.
 
-##### `user/name`
+#### `user/name`
 
 * Type: String
 * Is Required: No
 
 The name of the user.
 
-##### `user/uri`
+#### `user/uri`
 
 * Type: String
 * Is Required: No
@@ -398,37 +501,42 @@ The name of the user.
 
 The URI of the user.
 
-##### `user/*`
+#### `user/*`
 
 * Type: Any
 * Is Required: No
 
 Additional properties that are specific to the user.
 
-### Entries (`/entries[]`)
+## Entries (`/entries[]`)
+
+* Type: Array
+* Is Required: Yes
+* Unique Items: Yes
+* Minimum Items: 1
 
 The entries array contains media entries.
 
-> WIP.
+## Definitions
 
-### Definitions
+### Enum: MediaType
 
-#### Enum: MediaType
+* Type: String
+* Enumeration of:
+  * `animation`
+  * `comic`
+  * `game`
+  * `tv`
+  * `movie`
+  * `book`
+  * `podcast`
+  * `other`
 
-* `animation`
-* `comic`
-* `game`
-* `tv`
-* `movie`
-* `book`
-* `podcast`
-* `other`
-
-> **NOTE**
+> **Note**
 >
 > This is not a complete list of media types, and is subject to change.
 
-#### Int: Progress
+### Int: Progress
 
 * Type: Integer
 * Minimum: 0
@@ -436,11 +544,97 @@ The entries array contains media entries.
 
 The progress of the media entry.
 
-If the media is not yet started, the progress is `0`, replacing the `null` value.
+If the media is not yet started, the progress is `0`, replacing the `null`
+value.
 
-## Usage Example
+### Object: Dates
 
-### JSON Headerless
+* Type: Object
+* Additional Properties: No
+* Requires: `start`, `finish`
+
+The dates object contains information regarding the start and finish dates of
+the media entry.
+
+The object may also contain a `season` property, which is a string that
+represents the season of the year when the media entry started.
+
+#### `dates/start`
+
+* Type: Object
+* Object of: [DatesChild{}](#object-dateschild)
+* Is Required: Yes
+
+The start date of the media entry.
+
+#### `dates/finish`
+
+* Type: Object
+* Object of: [DatesChild{}](#object-dateschild)
+* Is Required: Yes
+
+The finish date of the media entry.
+
+#### `dates/season`
+
+* Type: String
+* Enumeration of: `spring`, `summer`, `fall`, `winter`
+* Is Required: No
+
+The season of the year when the media entry started.
+
+#### `dates/time`
+
+* Type: String
+* Format: [RFC 3339 § 5.6: `Partial-Time`](https://tools.ietf.org/html/rfc3339#section-5.6)
+* Is Required: No
+
+Time of broadcast
+
+### Object: DatesChild
+
+* Type: Object
+* Additional Properties: No
+* Requires: `date`, `month`, `year`
+
+The dates child object contains information regarding the date, month, and year
+
+#### `datesChild/date`
+
+* One of:
+  * Type: Integer
+    * Minimum: 1
+    * Maximum: 31
+  * Type: Null
+* Is Required: Yes
+
+The day of the month.
+
+#### `datesChild/month`
+
+* One of:
+  * Type: Integer
+    * Minimum: 1
+    * Maximum: 12
+  * Type: Null
+* Is Required: Yes
+
+The month of the year.
+
+#### `datesChild/year`
+
+* One of:
+  * Type: Integer
+    * Minimum: 1
+    * Maximum: 9999
+  * Type: Null
+* Is Required: Yes
+
+The year.
+
+# Examples
+
+## JSON Headerless
 
 ```json
 [
@@ -477,7 +671,7 @@ If the media is not yet started, the progress is `0`, replacing the `null` value
 ]
 ```
 
-### HJSON Headerless
+## HJSON Headerless
 
 ```hjson
 [
@@ -515,7 +709,7 @@ If the media is not yet started, the progress is `0`, replacing the `null` value
 ]
 ```
 
-### PSD1 Headered
+## PSD1 Headered
 
 <!-- cSpell:words Ayumu Sensei Hikaru -->
 
@@ -579,7 +773,7 @@ If the media is not yet started, the progress is `0`, replacing the `null` value
 }
 ```
 
-### YAML Headered
+## YAML Headered
 
 ```yaml
 ---
